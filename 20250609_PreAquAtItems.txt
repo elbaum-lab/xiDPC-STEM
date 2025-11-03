@@ -1,0 +1,41 @@
+#!Python
+#=============================
+# Name: PreTiltSeries
+#Author: Peter Kirchweger
+#=============================
+#
+import serialem as sem
+from autoscript_tem_microscope_client import TemMicroscopeClient
+from autoscript_tem_microscope_client.enumerations import *
+#from autoscript_tem_microscope_client.structures import *
+
+############################################
+#Set the wanted defocus here
+defoc = -0.5
+############################################
+# Connect to AutoScript server
+sem.Echo("I'm connecting to the AutoScriptTEM Server")
+microscope = TemMicroscopeClient()
+microscope.connect("192.168.0.1", 7521)
+
+# Read out microscope type and software version
+system_info = microscope.service.system.name + ", version " + microscope.service.system.version
+print("System info: " + system_info)
+
+# Read out available detectors and cameras
+scanning_detectors = microscope.detectors.scanning_detectors
+print("Scanning detectors: ", scanning_detectors)
+
+bf_s = microscope.detectors.get_scanning_detector(DetectorType.BF_S)
+bf_s.set_enabled_segments(DetectorSegmentType.INNER_RING)
+df_s = microscope.detectors.get_scanning_detector(DetectorType.DF_S)
+df_s.set_enabled_segments(DetectorSegmentType.ALL)
+print("#################################################")
+print(f"Camera length is: {microscope.optics.camera_length.value.label}")
+print(f"This is the detection angle {bf_s.collection_angle_limits} (rad) of the inner ring")
+print(f"This is the detection angle {df_s.collection_angle_limits} (rad) of the two outer rings (DF-I + DF-O)")
+print(f"This is the gain {df_s.gain} and offset {df_s.offset}")
+print("#################################################")
+#sem.ReportDefocus()
+sem.SetDefocus(defoc)
+print(f"This is the Defocus: {sem.ReportDefocus()}")

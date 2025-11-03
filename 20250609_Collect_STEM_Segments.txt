@@ -1,0 +1,108 @@
+#!Python
+#=============================
+# Name: CollectSTEMSegments
+#Author: Peter Kirchweger
+#=============================
+
+import serialem as sem
+from autoscript_tem_microscope_client import TemMicroscopeClient
+from autoscript_tem_microscope_client.enumerations import *
+from autoscript_tem_microscope_client.structures import *
+import math
+import mrcfile
+import pathlib, os, sys
+######################################################################
+#Make Sure to change the pixelsize to 4096, 2048, 1024, 512; and the Dwell time to 3 (units of microseconds) 
+#Before the tilt seires you must run a preliminary record with dynamic focus on, at the same magnification you intend to use here
+Pixels = 4096
+DwellTime = 5
+Binning = int(4096/Pixels)
+##################################################################
+
+parentdir = pathlib.Path(sem.ReportCurrentFilename()).parent
+os.chdir(parentdir)
+print(parentdir)
+File_name = pathlib.Path(sem.ReportCurrentFilename()).stem
+workdir = os.path.join(pathlib.Path(sem.ReportCurrentFilename()).parent, File_name)
+print(workdir)
+if not os.path.exists(File_name):
+   os.mkdir(File_name)
+print("I save the files to workdir: " + workdir)
+File_name = str(File_name)
+print(f"The dwell time is: {DwellTime} usec!")
+#Retrieve the PixelSize at binning 1
+sem.ReportLowDose()
+sem.GoToLowDoseArea("R")
+sem.ReportMag()
+sem.ReportBinning("3")
+
+##### SET BINNING TO THE NUMBERS OF PIXELS YOU RECORD IN THE TILT SERIES
+##### SetBinning takes two argments, the first (in "") is the LowDoseArea (3 for Record)
+sem.SetBinning("3",Binning)
+
+sem.ReportBinning("3")
+########
+for i in str(sem.ReportCurrentPixelSize(str(3))).split(): 
+    try:
+        float(i.replace(',', '.'))
+        PixelSize = str(round(float(i), 4)*10)
+    except ValueError:
+        pass
+
+sem.Echo("The PixelSze is: " + PixelSize)
+sem.SetBinning("3",8)
+sem.ReportBinning("3")
+
+# Connect to AutoScript server
+sem.Echo("I'm connecting to the AutoScriptTEM Server")
+microscope = TemMicroscopeClient()
+microscope.connect("192.168.0.1", 7521)
+
+# Change optical mode to STEM
+#microscope.optics.optical_mode = OpticalMode.STEM
+
+# Read out microscope type and software version
+#system_info = microscope.service.system.name + ", version " + microscope.service.system.version
+#print("System info: " + system_info)
+
+# Read out available detectors and cameras
+#scanning_detectors = microscope.detectors.scanning_detectors
+#print("Scanning detectors: ", scanning_detectors)
+
+bf_s = microscope.detectors.get_scanning_detector(DetectorType.BF_S)
+bf_s.set_enabled_segments(DetectorSegmentType.INNER_RING)
+df_s = microscope.detectors.get_scanning_detector(DetectorType.DF_S)
+df_s.set_enabled_segments(DetectorSegmentType.ALL)
+
+segments = bf_s.get_enabled_segments() + df_s.get_enabled_segments()
+print("Activated segments: ", segments)
+
+ExpTime = Pixels * Pixels * DwellTime * 1E-6
+reportedValues=sem.SetupDynamicFocus(ExpTime,Pixels,Pixels,Binning)
+print(reportedValues)
+
+if reportedValues[0]!=-1:
+   sem.StartFocusRamper()
+   print('Dynamic Focus ramp is on')
+
+#########################################################################
+images = microscope.acquisition.acquire_stem_segment_images(segments, int(Pixels), float(DwellTime)*1E-6)
+#########################################################################
+sem.FinishFocusRamp()
+
+n = len(images)
+columns = min(4, n)
+rows = math.ceil(n/columns)
+
+TiltAngle = str("{0:0=3d}".format(round(sem.ReportTiltAngle())))
+
+for row in range(rows):
+    for column in range(columns):
+        i = column + row * columns 
+        if i < n:
+            with mrcfile.new(os.path.join(File_name, File_name + "_" + segments[i].detector_name + "_" + segments[i].name + "_tilt" + TiltAngle + ".mrc"), overwrite=True) as mrc:
+                mrc.set_data(images[i].data)
+                mrc.voxel_size = PixelSize
+print("Twelve segment script finished successfully for tilt " + TiltAngle)
+sem.SetDirectory(workdir)
+print(os.getcwd())
