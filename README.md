@@ -21,11 +21,11 @@
 ## Data processing 
 ### Setup Matlab
 Requires MatTomo in search path (PEET project: https://bio3d.colorado.edu/imod/matlab.html).
-Place the 'panther\_iDPC.m' script into the Matlab folder.
+Place the 'panther\_xiDPC.m' script into the Matlab folder.
 
 
 ### Run the Python script to execute the pBF and piDPC calculation
-1. Make the following changes in the config file: 
+1. Make the following changes in the xDPC.conf file: 
 1.1 Specify the Parent directory, i.e. the data folder which contains the subfolders with the data
 1.2 Specify the Matlab folder 
 1.3 Specify the 'search_pattern' (something which makes the script recognizing the file name)
@@ -35,11 +35,11 @@ Place the 'panther\_iDPC.m' script into the Matlab folder.
 1.7 Specify the how far the BF disk extends on the detector, e.g. 'DF_Outer'
 2. execute the Process\_Pantherdata script using these options: 
 #### Using config file only
-python Process\_Pantherdata.py --config piDPC.conf
+python Process\_Pantherdata.py --config xDPC.conf
 #### Using command-line arguments only
 python Process\_Pantherdata.py -d /path/to/data -m /path/to/matlab
 #### Mix config file with command-line overrides
-python Process\_Pantherdata.py --config piDPC.conf --tilt-step 3.0 --semi-angle 1.5
+python Process\_Pantherdata.py --config xDPC.conf --tilt-step 3.0 --semi-angle 1.5
 
 
 ### Align the resulting tilt series of a contrast mode (either pBF or piDPC) using IMOD or AreTomo

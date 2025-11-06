@@ -49,16 +49,16 @@ def load_config(config_file):
     config = configparser.ConfigParser(comment_prefixes=('#', ';'))
     config.read(config_file)
     
-    if 'piDPC' not in config:
-        raise ValueError(f"Config file {config_file} must contain a [piDPC] section")
+    if 'xDPC' not in config:
+        raise ValueError(f"Config file {config_file} must contain a [xDPC] section")
     
-    return config['piDPC']
+    return config['xDPC']
 
 
 def parse_arguments():
     """Parse command-line arguments with config file support."""
     parser = argparse.ArgumentParser(
-        description='Process Panther data for piDPC analysis',
+        description='Process Panther data for xDPC analysis',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     
@@ -66,7 +66,7 @@ def parse_arguments():
     parser.add_argument(
         '--config', '-c',
         type=str,
-        help='Path to piDPC.conf configuration file'
+        help='Path to xDPC.conf configuration file'
     )
     
     # All other parameters
@@ -121,7 +121,7 @@ def parse_arguments():
     parser.add_argument(
         '--matlab-function', '-f',
         type=str,
-        default='panther_piDPC',
+        default='panther_xDPC',
         help='Name of the MATLAB function to execute'
     )
     
@@ -160,7 +160,7 @@ def parse_arguments():
             args.bf_disk_location = config['bf_disk_location']
         if args.matlab_folder is None and 'matlab_folder' in config:
             args.matlab_folder = config['matlab_folder']
-        if args.matlab_function == 'panther_piDPC' and 'matlab_function' in config:
+        if args.matlab_function == 'panther_xDPC' and 'matlab_function' in config:
             args.matlab_function = config['matlab_function']
         if 'overwrite' in config:
             args.overwrite = config.getboolean('overwrite')

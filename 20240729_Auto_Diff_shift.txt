@@ -1,0 +1,208 @@
+#!Python
+
+# Test channels and center diffraction disc automatically
+#  Written Peter Kirchweger & Shahar Seifer
+# (C)2024 Elbaum lab, Weizmann Institute of Science
+from autoscript_tem_microscope_client import TemMicroscopeClient
+from autoscript_tem_microscope_client.enumerations import *
+from autoscript_tem_microscope_client.structures import *
+import numpy as np
+import math
+import time
+from matplotlib import pyplot as plt
+import pandas as pd
+from sklearn import linear_model
+
+#sys.path.insert(0,'C:\\Program Files\\SerialEM\\PythonModules')
+import serialem as sem
+
+factor_sensitivity=10
+attenuation=0.3
+
+def solve_theta(C: float):
+    # Solve theta-sin(theta)=C by Newton's method
+    Cnorm = C
+    if Cnorm > 2 * math.pi:
+        Cnorm = 2 * math.pi
+    if Cnorm < -2 * math.pi:
+        Cnorm = -2 * math.pi
+    theta = Cnorm
+    for n in range(0, 10):
+        if abs(-1 + math.cos(theta)) > 0.001:
+            theta = theta - (Cnorm - theta + math.sin(theta)) / (-1 + math.cos(theta));
+    return theta
+
+microscope = TemMicroscopeClient()
+microscope.connect("192.168.0.1", 7521)
+#sem.ConnectToSEM(48888,'192.168.100.20') #take over SeiralEM control, modify to correct ip and port
+time.sleep(1)
+
+bf_s = microscope.detectors.get_scanning_detector(DetectorType.BF_S)
+df_s = microscope.detectors.get_scanning_detector(DetectorType.DF_S)
+# haadf = microscope.detectors.get_scanning_detector(DetectorType.HAADF)
+
+# Enable the inner segments on the BF-S detector
+bf_s.set_enabled_segments(DetectorSegmentType.INNER_RING)
+
+# Enable all segments on the DF-S detector
+df_s.set_enabled_segments(DetectorSegmentType.ALL)
+
+# Enable SINGLE segment on HAADF
+# haadf.set_enabled_segments(DetectorSegmentType.SINGLE)
+
+# Join the two lists together
+segments = bf_s.get_enabled_segments() + df_s.get_enabled_segments()  # + haadf.get_enabled_segments()
+RR = 40.0
+df_x = pd.DataFrame(columns=['con_x', 'con_y', 'x'], index=[0, 1, 2])
+df_y = pd.DataFrame(columns=['con_x', 'con_y', 'y'], index=[0, 1, 2])
+arbstep = 0.05
+bias1=0
+bias2=0
+bias3=0
+bias4=0
+#fig, plots = plt.subplots(rows, columns)
+#fig.tight_layout()
+
+
+
+for iteration in range(-1, 18):
+
+   
+    if iteration==-1:
+         microscope.detectors.screen.insert()
+         time.sleep(3)
+    elif iteration==0:
+         microscope.detectors.screen.retract()
+         time.sleep(3)
+
+    # Acquire one image per segment, a total of 12 images in this case
+    images = microscope.acquisition.acquire_stem_segment_images(segments, 256, 3E-6)
+    #microscope.detectors.screen.insert()
+    # Plot the images in max 4 columns wide
+    n = len(images)
+    columns = min(4, n)
+    rows = math.ceil(n / columns)
+    fig, plots = plt.subplots(rows, columns)
+    fig.tight_layout()
+    # Create a new dictionary for the images and the mean
+    image_mean_dict = {}
+    mean_intensity=np.zeros(12)
+
+    for i in range(0, 12):
+        gray = np.mean(images[i].data, axis=0)
+        mean_intensity[i] = np.mean(gray)
+        title = segments[i].detector_name + "-" + segments[i].name
+        image_mean_dict[title] = round(mean_intensity[i], 2)
+        column = i % 4
+        row = math.floor(i / 4)
+        plot = plots[row, column]
+        plot.axis('off')
+        plot.imshow(images[i].data, cmap='gray')
+        plot.set_title(title)
+        plot.text(100, 0, 'Mean: ' + str(round(mean_intensity[i], 2)), fontsize=8, ha='center')
+    sem.Echo()
+    print("################################################")
+    print("Starting round " + str(iteration))    
+    print(image_mean_dict)                 
+    #plt.show()
+    # Read dif.alignement from SeiralEM
+    (con_x, con_y) = sem.ReportDiffractionShift()
+    con_x=con_x*factor_sensitivity
+    con_y=con_y*factor_sensitivity
+    ch1 = image_mean_dict.get('DF-S-Outer1')
+    ch2 = image_mean_dict.get('DF-S-Outer2')
+    ch3 = image_mean_dict.get('DF-S-Outer3')
+    ch4 = image_mean_dict.get('DF-S-Outer4')
+
+    #ch1 = image_mean_dict.get('BF-S-Inner1') +  image_mean_dict.get('DF-S-Inner1') + image_mean_dict.get('DF-S-Outer1')
+    #ch2 = image_mean_dict.get('BF-S-Inner2') +  image_mean_dict.get('DF-S-Inner2') + image_mean_dict.get('DF-S-Outer2')
+    #ch3 = image_mean_dict.get('BF-S-Inner3') +  image_mean_dict.get('DF-S-Inner3') + image_mean_dict.get('DF-S-Outer3')
+    #ch4 = image_mean_dict.get('BF-S-Inner4') +  image_mean_dict.get('DF-S-Inner4') + image_mean_dict.get('DF-S-Outer4')
+
+    ch1=ch1-bias1
+    ch2=ch2-bias2
+    ch3=ch3-bias3
+    ch4=ch4-bias4
+
+
+    print(round(ch1,3), round(ch2,3), round(ch3,3), round(ch4,3))
+
+   
+
+#    ch1 = mean_intensity[0] + mean_intensity[4] + mean_intensity[8]
+#    ch2 = mean_intensity[1] + mean_intensity[5] + mean_intensity[9]
+#    ch3 = mean_intensity[2] + mean_intensity[6] + mean_intensity[10]
+#    ch4 = mean_intensity[3] + mean_intensity[7] + mean_intensity[11]
+    sumright = ch1 + ch2
+    sumleft = ch3 + ch4
+    sumup = ch1 + ch4
+    sumdown = ch2 + ch3
+    theta1 = solve_theta(math.pi * (1 + abs(sumdown - sumup) / (abs(sumdown) + abs(sumup) + 100)))
+    theta2 = solve_theta(math.pi * (1 + abs(sumright - sumleft) / (abs(sumright) + abs(sumleft) + 100)))
+    y = RR * (math.sqrt(1.0 - pow(math.sin(theta2 / 2), 2)))
+    x = RR * (math.sqrt(1.0 - pow(math.sin(theta1 / 2), 2)))
+   # mind the signs
+    if (sumup < sumdown):
+        x = -x
+    if (sumright < sumleft):
+        y = -y
+    print('x= {0:.6}   y= {1:.6}'.format(x,y))
+    df_x.loc[iteration] = [con_x, con_y, x]
+    df_y.loc[iteration] = [con_x, con_y, y]
+
+ 
+  
+    regx_ready = True
+    regy_ready = True
+    if iteration < 8:
+        regx_ready = False
+        regy_ready = False
+
+    if regx_ready:
+          regrx = linear_model.LinearRegression()
+          regrx.fit(df_x[['con_x', 'con_y']], df_x['x'])
+          print('regrx coef= {0:.6} , {1:.6}'.format(regrx.coef_[0],regrx.coef_[1]))
+          if (abs(regrx.coef_[0]) < 0.05 and abs(regrx.coef_[1]) < 0.05):
+              regx_ready = False
+    if regy_ready:
+          regry = linear_model.LinearRegression()
+          regry.fit(df_y[['con_x', 'con_y']], df_y['y'])
+          print('regry_coef= {0:.6} , {1:.6}'.format(regry.coef_[0],regry.coef_[1]))
+          if (abs(regry.coef_[0]) < 0.05 and abs(regry.coef_[1]) < 0.05):
+              regy_ready = False
+    # predicted_x = regrx.predict([[con_x, con_y]])
+    
+
+    if iteration==-1:
+         bias1=ch1
+         bias2=ch2
+         bias3=ch3
+         bias4=ch4
+    elif not (regx_ready) and iteration % 2 == 0:
+         con_x = con_x +  arbstep
+    elif not (regy_ready) and iteration % 2 == 1:
+        con_y = con_y +  arbstep
+        if not iteration==3:
+              arbstep = -arbstep
+    elif regx_ready and iteration % 2 == 0:
+        if abs(regrx.coef_[0]) > 0.2 * abs(regrx.coef_[1]):
+            con_x = con_x - attenuation* x / regrx.coef_[0]
+        if abs(regrx.coef_[1]) > 0.2 * abs(regrx.coef_[0]):
+            con_y = con_y - attenuation* x / regrx.coef_[1]
+    elif regy_ready and iteration % 2 == 1:
+       if abs(regry.coef_[0]) > 0.2 * abs(regry.coef_[1]):
+            con_x = con_x - attenuation*y / regry.coef_[0]
+       if abs(regry.coef_[1]) > 0.2 * abs(regry.coef_[0]):
+            con_y = con_y - attenuation*y / regry.coef_[1]
+
+    #limit shift
+    con_x=max(min(con_x, 1), -1)
+    con_y=max(min(con_y, 1), -1)
+    
+
+    # Modify dif.alignement by SerialEM
+    message = "sem.SetDiffractionShift({0:.6f},{1:.6f})".format(con_x/factor_sensitivity, con_y/factor_sensitivity)
+    exec(message)
+    print(con_x/factor_sensitivity, con_y/factor_sensitivity)
+
+print('Ended after presribed number of iterations')
