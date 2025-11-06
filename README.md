@@ -2,11 +2,11 @@
 ## Setup
 1. Install AutoScript TEM on the microscope computer and on the SerialEM computer
 2. Make sure that from SerialEM you can connect to AutoScript TEM on the microscope computer:
-2.1 Set the correct IP adress or computername (e.g. by running the '20250609_PreAquAtItems.txt' script)
+2.1 Set the correct IP adress or computername (e.g. by running the '20250609\_PreAquAtItems.txt' script)
 3. Center the beam on the detector (e.g. by running the '12segments.py' on the microscope computer)
 
 ## Collection of the individual segments of the panther detector using SerialEM
-1. Copy the text of the '20250609_PreAquAtItems.txt' and '20250609_Collect_STEM_Segments.txt' to your SerialEM scripts
+1. Copy the text of the '20250609\_PreAquAtItems.txt' and '20250609\_Collect_STEM_Segments.txt' to your SerialEM scripts
 2. In the 'PreAquAtItems' script set the defocus (usually around 0.5 µm)
 3. In the 'Collect_STEM_Segments' set the number of pixels and the dwell time (µs)
 4. In the 'AquireAtItems' setup, specify the 'PreAquAtItems' script to run before each item
@@ -17,10 +17,10 @@
 ## Data processing 
 ### Setup Matlab
 Requires MatTomo in search path (PEET project: https://bio3d.colorado.edu/imod/matlab.html).
-Place the 'panther_iDPC.m' script into the Matlab folder.
+Place the 'panther\_iDPC.m' script into the Matlab folder.
 
 ### Run the Python script to execute the pBF and piDPC calculation
-1. Make the following changes in the script: 
+1. Make the following changes in the config file: 
 1.1 Specify the Parent directory, i.e. the data folder which contains the subfolders with the data
 1.2 Specify the Matlab folder 
 1.3 Specify the 'search_pattern' (something which makes the script recognizing the file name)
@@ -28,15 +28,15 @@ Place the 'panther_iDPC.m' script into the Matlab folder.
 1.5 Specify the 'semi_angle'
 1.6 Specify the 'wavelength'
 1.7 Specify the how far the BF disk extends on the detector, e.g. 'DF_Outer'
-
+2. execute the Process\_Pantherdata script using these options: 
 #### Using config file only
-python Process_Pantherdata.py --config piDPC.conf
+python Process\_Pantherdata.py --config piDPC.conf
 #### Using command-line arguments only
-python Process_Pantherdata.py -d /path/to/data -m /path/to/matlab
+python Process\_Pantherdata.py -d /path/to/data -m /path/to/matlab
 #### Mix config file with command-line overrides
-python Process_Pantherdata.py --config piDPC.conf --tilt-step 3.0 --semi-angle 1.5
+python Process\_Pantherdata.py --config piDPC.conf --tilt-step 3.0 --semi-angle 1.5
 #### Get help
-python Process_Pantherdata.py --help
+python Process\_Pantherdata.py --help
 
 ### Align the a contrast mode (either pBF or piDPC) using IMOD or AreTomo
 Make sure that AreTomo exports the IMOD files
@@ -49,7 +49,7 @@ Make sure that AreTomo exports the IMOD files
 4. Set trimming to yes or no (line 12)
 4.1 If to yes, set the amount of z-slices for the final rotated reconstruction (line 13)
 5. Change the filename flag (line 86)
-6. Run the '20250507_Rings_reconstruction.sh' script which performs the alignment and reconstruction based on the previous alignment
+6. Run the '20250507\_Rings\_reconstruction.sh' script which performs the alignment and reconstruction based on the previous alignment
 
 ### Postprocessing using 3d-deconvolution
 as described in https://doi.org/10.1016/j.jsb.2023.107982
