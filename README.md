@@ -5,6 +5,8 @@
 2.1 Set the correct IP adress or computername (e.g. by running the '20250609\_PreAquAtItems.txt' script)
 3. Center the beam on the detector (e.g. by running the '12segments.py' on the microscope computer)
 
+
+
 ## Collection of the individual segments of the panther detector using SerialEM
 1. Copy the text of the '20250609\_PreAquAtItems.txt' and '20250609\_Collect_STEM_Segments.txt' to your SerialEM scripts
 2. In the 'PreAquAtItems' script set the defocus (usually around 0.5 µm)
@@ -14,10 +16,13 @@
 5. Specify a 'Dummy Record': in the camera properties set the 'Record mode' to 512 pixels and 0.1 µs dwell time (the lowest possible for each)
 6. Set up positions to record tilt series and make sure to save the tilt series into a separate data folder. The 'Collect_STEM_Segments' script will save the data into a subfolder for each item recorded.
 
+
+
 ## Data processing 
 ### Setup Matlab
 Requires MatTomo in search path (PEET project: https://bio3d.colorado.edu/imod/matlab.html).
 Place the 'panther\_iDPC.m' script into the Matlab folder.
+
 
 ### Run the Python script to execute the pBF and piDPC calculation
 1. Make the following changes in the config file: 
@@ -35,11 +40,12 @@ python Process\_Pantherdata.py --config piDPC.conf
 python Process\_Pantherdata.py -d /path/to/data -m /path/to/matlab
 #### Mix config file with command-line overrides
 python Process\_Pantherdata.py --config piDPC.conf --tilt-step 3.0 --semi-angle 1.5
-#### Get help
-python Process\_Pantherdata.py --help
 
-### Align the a contrast mode (either pBF or piDPC) using IMOD or AreTomo
+
+### Align the resulting tilt series of a contrast mode (either pBF or piDPC) using IMOD or AreTomo
+(Please note, the 'Dummy Record Tilt series' can be used to extract the .rawtlt)
 Make sure that AreTomo exports the IMOD files
+
 
 ### Apply the alignment to other contrast modes
 1. Create a new folder 
