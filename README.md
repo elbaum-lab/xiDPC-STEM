@@ -4,16 +4,20 @@
 2. Make sure that AutoScript TEM on the microscope computer is reachable from SerialEM:
 2.1 Set the correct IP adress or computername
 2.2 Test by e.g. running the '20250609\_PreAquAtItems.txt' script
-3. Center the beam on the detector (e.g. by running the '12segments.py' on the microscope computer, or the 20240729\_Auto\_Diff\_shift.txt from SerialEM)
+3. Beam Centering: 
+3.1 Center the beam roughly to the center on the detector 
+3.2 Fine: 
+3.2.1 refine manually by running the '12segments.py' on the microscope computer, or 
+3.2.2 automatically by running the '20251202\_CenterBeam.txt' from SerialEM (watch the log carefully). If it doesn't converge properly, center manually (3.2.1) and then again (3.2.2) 
 
 
 
 ## Collection of the individual segments of the panther detector using SerialEM
-1. Copy the text of the '20250609\_PreAquAtItems.txt' and '20250609\_Collect_STEM_Segments.txt' to your SerialEM scripts
-2. In the 'PreAquAtItems' script set the defocus (usually around -0.5 µm)
+1. Copy the text of the '20251202\_PreAquAtItems.txt', '20251202\_CenterBeam.txt' and '20250609\_Collect_STEM_Segments.txt' to your SerialEM scripts
+2. The 'PreAquAtItems' script sets the defocus (usually around -0.5 µm), and executes the CenterBeam script to automatically center the diffraction disk on the four segments
 3. In the 'Collect_STEM_Segments' set the number of pixels and the dwell time (µs)
 4. In the 'AquireAtItems' setup, specify the 'PreAquAtItems' script to run before each item
-5. In the Tilt menu, go to 'Run Script in TS', choose the correct script and then 4, to run it before each Record step
+5. In the Tilt menu, go to 'Run Script in TS', choose the correct script and then '4', to run it before each Record step
 6. Specify a 'Dummy Record': in the camera properties set the 'Record mode' to 512 pixels and 0.1 µs dwell time (the lowest possible for each)
 7. Set up positions to record tilt series and make sure to save the tilt series into a separate data folder. The 'Collect_STEM_Segments' script will save the data into a subfolder for each item recorded.
 
