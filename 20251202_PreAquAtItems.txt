@@ -1,6 +1,6 @@
 #!Python
 #=============================
-# Name: PreTiltSeries
+#ScriptName PreTiltSeries
 #Author: Peter Kirchweger
 #=============================
 #
@@ -39,3 +39,17 @@ print("#################################################")
 #sem.ReportDefocus()
 sem.SetDefocus(defoc)
 print(f"This is the Defocus: {sem.ReportDefocus()}")
+sem.GoToLowDoseArea('F')
+sem.ReportLowDose()
+sem.SetLowDoseMode(0)
+sem.ReportLowDose()
+sem.SetMag(650000)
+sem.ReportMag()
+print("Switching to high mag")
+#include CenterDisk
+
+sem.SetLowDoseMode(1)
+sem.GoToLowDoseArea('R')
+sem.ReportMag()
+sem.ReportDiffractionShift()
+

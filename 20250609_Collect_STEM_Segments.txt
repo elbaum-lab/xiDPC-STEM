@@ -1,6 +1,6 @@
 #!Python
 #=============================
-# Name: CollectSTEMSegments
+#ScriptName CollectSTEMSegments
 #Author: Peter Kirchweger
 #=============================
 

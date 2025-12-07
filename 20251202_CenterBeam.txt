@@ -1,8 +1,11 @@
 #!Python
+### NEW!!!!!
+#=============================
+#ScriptName CenterDisk
+#  Author: Peter Kirchweger & Shahar Seifer
+# (C)2025 Elbaum lab, Weizmann Institute of Science
+#=============================
 
-# Test channels and center diffraction disc automatically
-#  Written Peter Kirchweger & Shahar Seifer
-# (C)2024 Elbaum lab, Weizmann Institute of Science
 from autoscript_tem_microscope_client import TemMicroscopeClient
 from autoscript_tem_microscope_client.enumerations import *
 from autoscript_tem_microscope_client.structures import *
@@ -37,7 +40,6 @@ time.sleep(1)
 
 bf_s = microscope.detectors.get_scanning_detector(DetectorType.BF_S)
 df_s = microscope.detectors.get_scanning_detector(DetectorType.DF_S)
-# haadf = microscope.detectors.get_scanning_detector(DetectorType.HAADF)
 
 # Enable the inner segments on the BF-S detector
 bf_s.set_enabled_segments(DetectorSegmentType.INNER_RING)
@@ -45,37 +47,29 @@ bf_s.set_enabled_segments(DetectorSegmentType.INNER_RING)
 # Enable all segments on the DF-S detector
 df_s.set_enabled_segments(DetectorSegmentType.ALL)
 
-# Enable SINGLE segment on HAADF
-# haadf.set_enabled_segments(DetectorSegmentType.SINGLE)
-
 # Join the two lists together
-segments = bf_s.get_enabled_segments() + df_s.get_enabled_segments()  # + haadf.get_enabled_segments()
+segments = bf_s.get_enabled_segments() + df_s.get_enabled_segments()
 RR = 40.0
 df_x = pd.DataFrame(columns=['con_x', 'con_y', 'x'], index=[0, 1, 2])
 df_y = pd.DataFrame(columns=['con_x', 'con_y', 'y'], index=[0, 1, 2])
 arbstep = 0.05
-bias1=0
-bias2=0
-bias3=0
-bias4=0
-#fig, plots = plt.subplots(rows, columns)
-#fig.tight_layout()
 
+# Convergence parameters
+convergence_threshold = 0.10  # 10% difference threshold
+large_difference_threshold = 1.00  # 100% difference threshold
+large_step_multiplier = 3.0  # Make steps 3x larger when far from center
 
+# Track best position throughout entire run
+best_difference = float('inf')
+best_con_x = 0
+best_con_y = 0
+best_iteration = -1
 
-for iteration in range(-1, 18):
-
-   
-    if iteration==-1:
-         microscope.detectors.screen.insert()
-         time.sleep(3)
-    elif iteration==0:
-         microscope.detectors.screen.retract()
-         time.sleep(3)
+for iteration in range(0, 18):
 
     # Acquire one image per segment, a total of 12 images in this case
     images = microscope.acquisition.acquire_stem_segment_images(segments, 256, 3E-6)
-    #microscope.detectors.screen.insert()
+    
     # Plot the images in max 4 columns wide
     n = len(images)
     columns = min(4, n)
@@ -102,28 +96,51 @@ for iteration in range(-1, 18):
     print("################################################")
     print("Starting round " + str(iteration))    
     print(image_mean_dict)                 
-    #plt.show()
-    # Read dif.alignement from SeiralEM
+    
+    # Read dif.alignement from SerialEM
     (con_x, con_y) = sem.ReportDiffractionShift()
     con_x=con_x*factor_sensitivity
     con_y=con_y*factor_sensitivity
+    
+    # Get channel values directly without bias subtraction
     ch1 = image_mean_dict.get('DF-S-Outer1')
     ch2 = image_mean_dict.get('DF-S-Outer2')
     ch3 = image_mean_dict.get('DF-S-Outer3')
     ch4 = image_mean_dict.get('DF-S-Outer4')
 
-    #ch1 = image_mean_dict.get('BF-S-Inner1') +  image_mean_dict.get('DF-S-Inner1') + image_mean_dict.get('DF-S-Outer1')
-    #ch2 = image_mean_dict.get('BF-S-Inner2') +  image_mean_dict.get('DF-S-Inner2') + image_mean_dict.get('DF-S-Outer2')
-    #ch3 = image_mean_dict.get('BF-S-Inner3') +  image_mean_dict.get('DF-S-Inner3') + image_mean_dict.get('DF-S-Outer3')
-    #ch4 = image_mean_dict.get('BF-S-Inner4') +  image_mean_dict.get('DF-S-Inner4') + image_mean_dict.get('DF-S-Outer4')
-
-    ch1=ch1-bias1
-    ch2=ch2-bias2
-    ch3=ch3-bias3
-    ch4=ch4-bias4
-
-
     print(round(ch1,3), round(ch2,3), round(ch3,3), round(ch4,3))
+
+    # Check convergence and track best position
+    ch_mean = (ch1 + ch2 + ch3 + ch4) / 4.0
+    ch_max = max(ch1, ch2, ch3, ch4)
+    ch_min = min(ch1, ch2, ch3, ch4)
+    
+    if ch_mean > 0:
+        relative_difference = (ch_max - ch_min) / ch_mean
+        print(f'Relative difference: {relative_difference:.3f} ({relative_difference*100:.1f}%)')
+        
+        # Track best position at ANY iteration
+        if relative_difference < best_difference:
+            best_difference = relative_difference
+            best_con_x = con_x
+            best_con_y = con_y
+            best_iteration = iteration
+            print(f'NEW BEST POSITION! con_x={con_x:.3f}, con_y={con_y:.3f}, diff={relative_difference:.3f}, iteration={iteration}')
+        
+        # Check if converged
+        if relative_difference < convergence_threshold:
+            print(f'CONVERGED! Channel difference < {convergence_threshold*100}%')
+            print(f'Final channel values: ch1={ch1:.2f}, ch2={ch2:.2f}, ch3={ch3:.2f}, ch4={ch4:.2f}')
+            break
+        
+        # Adaptive step size based on difference
+        if relative_difference > large_difference_threshold:
+            current_attenuation = attenuation * large_step_multiplier
+            print(f'Large difference detected - using {large_step_multiplier}x step size')
+        else:
+            current_attenuation = attenuation
+    else:
+        current_attenuation = attenuation
 
     sumright = ch1 + ch2
     sumleft = ch3 + ch4
@@ -142,8 +159,6 @@ for iteration in range(-1, 18):
     df_x.loc[iteration] = [con_x, con_y, x]
     df_y.loc[iteration] = [con_x, con_y, y]
 
- 
-  
     regx_ready = True
     regy_ready = True
     if iteration < 8:
@@ -162,15 +177,8 @@ for iteration in range(-1, 18):
           print('regry_coef= {0:.6} , {1:.6}'.format(regry.coef_[0],regry.coef_[1]))
           if (abs(regry.coef_[0]) < 0.05 and abs(regry.coef_[1]) < 0.05):
               regy_ready = False
-    # predicted_x = regrx.predict([[con_x, con_y]])
-    
 
-    if iteration==-1:
-         bias1=ch1
-         bias2=ch2
-         bias3=ch3
-         bias4=ch4
-    elif not (regx_ready) and iteration % 2 == 0:
+    if not (regx_ready) and iteration % 2 == 0:
          con_x = con_x +  arbstep
     elif not (regy_ready) and iteration % 2 == 1:
         con_y = con_y +  arbstep
@@ -178,23 +186,34 @@ for iteration in range(-1, 18):
               arbstep = -arbstep
     elif regx_ready and iteration % 2 == 0:
         if abs(regrx.coef_[0]) > 0.2 * abs(regrx.coef_[1]):
-            con_x = con_x - attenuation* x / regrx.coef_[0]
+            con_x = con_x - current_attenuation* x / regrx.coef_[0]
         if abs(regrx.coef_[1]) > 0.2 * abs(regrx.coef_[0]):
-            con_y = con_y - attenuation* x / regrx.coef_[1]
+            con_y = con_y - current_attenuation* x / regrx.coef_[1]
     elif regy_ready and iteration % 2 == 1:
        if abs(regry.coef_[0]) > 0.2 * abs(regry.coef_[1]):
-            con_x = con_x - attenuation*y / regry.coef_[0]
+            con_x = con_x - current_attenuation*y / regry.coef_[0]
        if abs(regry.coef_[1]) > 0.2 * abs(regry.coef_[0]):
-            con_y = con_y - attenuation*y / regry.coef_[1]
+            con_y = con_y - current_attenuation*y / regry.coef_[1]
 
     #limit shift
-    con_x=max(min(con_x, 1), -1)
-    con_y=max(min(con_y, 1), -1)
+    con_x=max(min(con_x, 2), -2)
+    con_y=max(min(con_y, 2), -2)
     
-
     # Modify dif.alignement by SerialEM
     message = "sem.SetDiffractionShift({0:.6f},{1:.6f})".format(con_x/factor_sensitivity, con_y/factor_sensitivity)
     exec(message)
     print(con_x/factor_sensitivity, con_y/factor_sensitivity)
 
-print('Ended after presribed number of iterations')
+# After all iterations, return to best position found
+print('################################################')
+print('################################################')
+print(f'Alignment complete. Best position was at iteration {best_iteration}')
+print(f'Best difference: {best_difference:.3f} ({best_difference*100:.1f}%)')
+print(f'Moving to best position: con_x={best_con_x:.3f}, con_y={best_con_y:.3f}')
+message = "sem.SetDiffractionShift({0:.6f},{1:.6f})".format(best_con_x/factor_sensitivity, best_con_y/factor_sensitivity)
+exec(message)
+print('################################################')
+print('################################################')
+print(f'Final position set to: {best_con_x/factor_sensitivity:.6f}, {best_con_y/factor_sensitivity:.6f}')
+print('################################################')
+print('################################################')
