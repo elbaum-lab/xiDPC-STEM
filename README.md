@@ -1,12 +1,12 @@
 # piDPC and pBF data collection and processing
 ## Setup
-1. Install AutoScript TEM on the microscope computer and on the SerialEM computer
+1. Item Install AutoScript TEM on the microscope computer and on the SerialEM computer
 2. Make sure that AutoScript TEM on the microscope computer is reachable from SerialEM:
 2.1 Set the correct IP adress or computername
 2.2 Test by e.g. running the '20250609\_PreAquAtItems.txt' script
-3. Beam Centering: 
-3.1 Center the beam roughly to the center on the detector 
-3.2 Fine: 
+3. Item Beam Centering: 
+3.1 Item Center the beam roughly to the center on the detector 
+3.2 Item Fine: 
 3.2.1 refine manually by running the '12segments.py' on the microscope computer, or 
 3.2.2 automatically by running the '20251202\_CenterBeam.txt' from SerialEM (watch the log carefully). If it doesn't converge properly, center manually (3.2.1) and then again (3.2.2) 
 
