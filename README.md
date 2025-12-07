@@ -2,14 +2,13 @@
 ## Setup
 1. Install AutoScript TEM on the microscope computer and on the SerialEM computer
 2. Make sure that AutoScript TEM on the microscope computer is reachable from SerialEM:
-   - **2.1** Set the correct IP adress or computername
-   2.2 Test by e.g. running the '20250609\_PreAquAtItems.txt' script
-4. Beam Centering: 
-    3.1 Center the beam roughly to the center on the detector 
-    3.2 Fine: 
-        3.2.1 refine manually by running the '12segments.py' on the microscope computer, or 
-        3.2.2 automatically by running the '20251202\_CenterBeam.txt' from SerialEM (watch the log carefully). If it doesn't converge properly, center manually (3.2.1) and then again (3.2.2) 
-        3.2.3 (TEST)
+   - 2.1 Set the correct IP adress or computername
+   - 2.2 Test by e.g. running the '20250609\_PreAquAtItems.txt' script
+3. Beam Centering: 
+    - 3.1 Center the beam roughly to the center on the detector 
+    - 3.2 Fine: 
+        - 3.2.1 refine manually by running the '12segments.py' on the microscope computer, or 
+        - 3.2.2 automatically by running the '20251202\_CenterBeam.txt' from SerialEM (watch the log carefully). If it doesn't converge properly, center manually (3.2.1) and then again (3.2.2) 
 
 
 
@@ -32,13 +31,13 @@ Place the 'panther\_xiDPC.m' script into the Matlab startup folder.
 
 ### Run the Python script to execute the pBF and piDPC calculation
 1. Make the following changes in the xDPC.conf file: 
-1.1 Specify the Parent directory, i.e. the data folder that contains the subfolders with the data
-1.2 Specify the Matlab folder 
-1.3 Specify the 'search_pattern' (something which makes the script recognizing the file name)
-1.4 Specify the 'tilt_step'
-1.5 Specify the 'semi_angle'
-1.6 Specify the 'wavelength'
-1.7 Specify the how far the BF disk extends on the detector, e.g. 'DF_Outer'
+    - 1.1 Specify the Parent directory, i.e. the data folder that contains the subfolders with the data
+    - 1.2 Specify the Matlab folder
+    - 1.3 Specify the 'search_pattern' (something which makes the script recognizing the file name)
+    - 1.4 Specify the 'tilt_step'
+    - 1.5 Specify the 'semi_angle'
+    - 1.6 Specify the 'wavelength'
+    - 1.7 Specify the how far the BF disk extends on the detector, e.g. 'DF_Outer'
 2. execute the Process\_Pantherdata script using these options: 
 #### Using config file only
 python Process\_Pantherdata.py --config xDPC.conf
@@ -56,7 +55,7 @@ Make sure that AreTomo exports the IMOD files
 ### Apply the alignment to other contrast modes
 1. Create a new folder 
 2. Link the relevant tilt series into the new folder
-2.1 Merge the tilt series of a contrast mode using the IMOD program 'clip add' if they contain useful signal, e.g. inner + middle + outer ring
+   - 2.1 Merge the tilt series of a contrast mode using the IMOD program 'clip add' if they contain useful signal, e.g. inner + middle + outer ring
 3. Copy/link the .xf, .tlt, tilt.com and newst.com (and the other files specified in the two .com files)
 4. Set trimming to yes or no (line 12)
 4.1 If to yes, set the amount of z-slices for the final rotated reconstruction (line 13)
