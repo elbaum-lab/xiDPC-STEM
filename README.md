@@ -2,9 +2,9 @@
 ## Setup
 1. Install AutoScript TEM on the microscope computer and on the SerialEM computer
 2. Make sure that AutoScript TEM on the microscope computer is reachable from SerialEM:
-    2.1 Set the correct IP adress or computername
-    2.2 Test by e.g. running the '20250609\_PreAquAtItems.txt' script
-3. Beam Centering: 
+   2.1 Set the correct IP adress or computername
+   2.2 Test by e.g. running the '20250609\_PreAquAtItems.txt' script
+4. Beam Centering: 
     3.1 Center the beam roughly to the center on the detector 
     3.2 Fine: 
         3.2.1 refine manually by running the '12segments.py' on the microscope computer, or 
