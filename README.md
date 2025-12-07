@@ -9,6 +9,7 @@
     3.2 Fine: 
         3.2.1 refine manually by running the '12segments.py' on the microscope computer, or 
         3.2.2 automatically by running the '20251202\_CenterBeam.txt' from SerialEM (watch the log carefully). If it doesn't converge properly, center manually (3.2.1) and then again (3.2.2) 
+        3.2.3 (TEST)
 
 
 
