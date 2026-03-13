@@ -57,10 +57,18 @@ Make sure that AreTomo exports the IMOD files
 2. Link the relevant tilt series into the new folder
    - 2.1 Merge the tilt series of a contrast mode using the IMOD program 'clip add' if they contain useful signal, e.g. inner + middle + outer ring
 3. Copy/link the .xf, .tlt, tilt.com and newst.com (and the other files specified in the two .com files)
-4. Set trimming to yes or no (line 12)
-4.1 If to yes, set the amount of z-slices for the final rotated reconstruction (line 13)
-5. If needed, change the filename flag (line 86)
-6. Run the '20250507\_Rings\_reconstruction.sh' script which performs the alignment and reconstruction based on the previous alignment
+4. Execute the 'recon.sh': 
+    - 4.1 from the commandline: 
+        - 4.1.1 Specify the tilt series and the z-slices to which the tomogram should be trimmed to
+        recon.sh 'tomo*.mrc' 117-290
+        This will perform rotation around the x-axis (clip rotx) and trimming to the specified slices
+        - 4.1.2 Specify the tilt series
+        recon.sh 'tomo*.mrc'
+        This will perform rotation around the x-axis (clip rotx)
+    - 4.2. just execute 'recon.sh'
+    This is choose the default settings in the script 
+        - 4.2.1 Set trimming to yes or no (line 28, default is no) and specify the z-slices for the final rotated reconstruction (line 29)
+        - 4.2.2 If needed, change the filename flag (line 25)
 
 ### Postprocessing using 3d-deconvolution
 as described in https://doi.org/10.1016/j.jsb.2023.107982
