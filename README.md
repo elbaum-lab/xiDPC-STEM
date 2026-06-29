@@ -26,7 +26,7 @@
 ## Data processing 
 ### Setup Matlab
 Requires MatTomo in search path (PEET project: https://bio3d.colorado.edu/imod/matlab.html).
-Place the 'panther\_xiDPC.m' script into the Matlab startup folder.
+Place the 'panther\_xDPC.m' script into the Matlab startup folder.
 
 
 ### Run the Python script to execute the pBF and piDPC calculation
