@@ -49,98 +49,82 @@ def load_config(config_file):
     config = configparser.ConfigParser(comment_prefixes=('#', ';'))
     config.read(config_file)
     
-    if 'xDPC' not in config:
-        raise ValueError(f"Config file {config_file} must contain a [xDPC] section")
+    if 'piDPC' not in config:
+        raise ValueError(f"Config file {config_file} must contain a [piDPC] section")
     
-    return config['xDPC']
+    return config['piDPC']
 
 
 def parse_arguments():
     """Parse command-line arguments with config file support."""
     parser = argparse.ArgumentParser(
-        description='Process Panther data for xDPC analysis',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        description="Process Panther data for piDPC analysis",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    
-    # Config file option
+
     parser.add_argument(
-        '--config', '-c',
+        "--config", "-c",
         type=str,
-        help='Path to xDPC.conf configuration file'
+        help="Path to piDPC.conf configuration file",
     )
-    
-    # All other parameters
     parser.add_argument(
-        '--parent-directory', '-d',
+        "--parent-directory", "-d",
         type=str,
-        help='Directory containing the directories of the individual files'
+        help="Directory containing the directories of the individual files",
     )
-    
     parser.add_argument(
-        '--search-pattern', '-p',
+        "--search-pattern", "-p",
         type=str,
-        default='BF-S_Inner1',
-        help='Search pattern for files'
+        default="BF-S_Inner1",
+        help="Search pattern for files",
     )
-    
     parser.add_argument(
-        '--tilt-step', '-t',
+        "--tilt-step", "-t",
         type=float,
         default=2.0,
-        help='Tilt step in degrees'
+        help="Tilt step in degrees",
     )
-    
     parser.add_argument(
-        '--semi-angle', '-s',
+        "--semi-angle", "-s",
         type=float,
         default=1.2,
-        help='Semiconvergence angle in mrad'
+        help="Semiconvergence angle in mrad",
     )
-    
     parser.add_argument(
-        '--wavelength', '-w',
+        "--wavelength", "-w",
         type=float,
         default=0.0025,
-        help='Wavelength in nm'
+        help="Wavelength in nm",
     )
-    
     parser.add_argument(
-        '--bf-disk-location', '-b',
+        "--bf-disk-location", "-b",
         type=str,
-        default='DF_Outer',
-        choices=['BF_Inner', 'DF_Inner', 'DF_Outer'],
-        help='Location of the BF disk'
+        default="DF_Outer",
+        choices=["BF_Inner", "DF_Inner", "DF_Outer"],
+        help="Location of the BF disk",
     )
-    
     parser.add_argument(
-        '--matlab-folder', '-m',
+        "--matlab-folder", "-m",
         type=str,
-        help='Path to the MATLAB folder'
+        default="/home/labs/elbaum/Collaboration",
+        help="Path to the MATLAB folder",
     )
-    
     parser.add_argument(
-        '--matlab-function', '-f',
+        "--matlab-function", "-f",
         type=str,
-        default='panther_xDPC',
-        help='Name of the MATLAB function to execute'
+        default="panther_iDPC_function_PK4",
+        help="Name of the MATLAB function to execute",
     )
     
     parser.add_argument(
-        '--overwrite',
-        action='store_true',
+        "--overwrite",
+        action=argparse.BooleanOptionalAction,
         default=True,
-        help='Enable looking in Segments subfolder'
+        help="Overwrite existing results (if disabled, skips folders with existing output)",
     )
-    
-    parser.add_argument(
-        '--no-overwrite',
-        action='store_false',
-        dest='overwrite',
-        help='Disable looking in Segments subfolder'
-    )
-    
+
     args = parser.parse_args()
-    
+
     # If config file is provided, load it and use as defaults
     if args.config:
         config = load_config(args.config)
@@ -160,7 +144,7 @@ def parse_arguments():
             args.bf_disk_location = config['bf_disk_location']
         if args.matlab_folder is None and 'matlab_folder' in config:
             args.matlab_folder = config['matlab_folder']
-        if args.matlab_function == 'panther_xDPC' and 'matlab_function' in config:
+        if args.matlab_function == 'panther_piDPC' and 'matlab_function' in config:
             args.matlab_function = config['matlab_function']
         if 'overwrite' in config:
             args.overwrite = config.getboolean('overwrite')
