@@ -26,8 +26,7 @@
 ## Data processing 
 ### Setup Matlab
 Requires MatTomo in search path (PEET project: https://bio3d.colorado.edu/imod/matlab.html).
-Place the 'panther\_xDPC.m' into the Matlab startup folder.
-=======
+
 Place the 'panther\_xDPC.m' script into the Matlab startup folder.
 
 There are two ways of running: a python/matlab way and a pure matlab way:
