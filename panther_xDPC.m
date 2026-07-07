@@ -1,4 +1,4 @@
-function panther_xDPC_PK(varargin)
+function panther_xDPC(varargin)
 % Generate different iDPC contrasts for Panter 4-quadrants, parallax corrected
 % Written by Shahar Seifer & Peter Kirchweger, Elbaum lab, Weizmann Insititute of Science
 % Requires MatTomo in search path (PEET project: https://bio3d.colorado.edu/imod/matlab.html).
