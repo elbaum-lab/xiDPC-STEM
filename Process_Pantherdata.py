@@ -106,7 +106,7 @@ def parse_arguments():
     parser.add_argument(
         "--matlab-folder", "-m",
         type=str,
-        default="/home/labs/elbaum/Collaboration",
+        default="/matlab/home/folder",
         help="Path to the MATLAB folder",
     )
     parser.add_argument(
