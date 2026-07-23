@@ -15,10 +15,10 @@ import pathlib, os, sys
 #Make Sure to change the pixelsize to 4096, 2048, 1024, 512; and the Dwell time to 3 (units of microseconds) 
 #Before the tilt seires you must run a preliminary record with dynamic focus on, at the same magnification you intend to use here
 Pixels = 4096
-DwellTime = 5
+DwellTime = 1
 Binning = int(4096/Pixels)
 ##################################################################
-
+sem.ReportDiffractionShift()
 parentdir = pathlib.Path(sem.ReportCurrentFilename()).parent
 os.chdir(parentdir)
 print(parentdir)
@@ -59,24 +59,22 @@ microscope = TemMicroscopeClient()
 microscope.connect("COMPUTERNAME", 7521)
 %microscope.connect("IP-ADDRESS", 7521)
 
-# Change optical mode to STEM
-#microscope.optics.optical_mode = OpticalMode.STEM
-
-# Read out microscope type and software version
-#system_info = microscope.service.system.name + ", version " + microscope.service.system.version
-#print("System info: " + system_info)
-
-# Read out available detectors and cameras
-#scanning_detectors = microscope.detectors.scanning_detectors
-#print("Scanning detectors: ", scanning_detectors)
-
 bf_s = microscope.detectors.get_scanning_detector(DetectorType.BF_S)
-bf_s.set_enabled_segments(DetectorSegmentType.INNER_RING)
 df_s = microscope.detectors.get_scanning_detector(DetectorType.DF_S)
+haadf = microscope.detectors.get_scanning_detector(DetectorType.HAADF)
+
+# Enable the inner segments on the BF-S detector
+bf_s.set_enabled_segments(DetectorSegmentType.INNER_RING)
+
+# Enable all segments on the DF-S detector
 df_s.set_enabled_segments(DetectorSegmentType.ALL)
 
-segments = bf_s.get_enabled_segments() + df_s.get_enabled_segments()
-print("Activated segments: ", segments)
+# Enable SINGLE segment on HAADF
+haadf.set_enabled_segments(DetectorSegmentType.SINGLE)
+
+# Join the two lists together
+segments = haadf.get_enabled_segments()+ bf_s.get_enabled_segments() + df_s.get_enabled_segments()
+print("This is the number of segments: ", len(segments))
 
 ExpTime = Pixels * Pixels * DwellTime * 1E-6
 reportedValues=sem.SetupDynamicFocus(ExpTime,Pixels,Pixels,Binning)
@@ -104,6 +102,7 @@ for row in range(rows):
             with mrcfile.new(os.path.join(File_name, File_name + "_" + segments[i].detector_name + "_" + segments[i].name + "_tilt" + TiltAngle + ".mrc"), overwrite=True) as mrc:
                 mrc.set_data(images[i].data)
                 mrc.voxel_size = PixelSize
-print("Twelve segment script finished successfully for tilt " + TiltAngle)
+print("Thirteen segment script finished successfully for tilt " + TiltAngle)
 sem.SetDirectory(workdir)
 print(os.getcwd())
+sem.ReportDiffractionShift()

@@ -1,8 +1,8 @@
 #!Python
 ### NEW!!!!!
 #=============================
-#ScriptName CenterDisk
-#  Author: Peter Kirchweger & Shahar Seifer
+#ScriptName CenterDisk_Krios
+# Author: Peter Kirchweger & Shahar Seifer
 # (C)2025 Elbaum lab, Weizmann Institute of Science
 #=============================
 
@@ -51,6 +51,7 @@ df_s.set_enabled_segments(DetectorSegmentType.ALL)
 
 # Join the two lists together
 segments = bf_s.get_enabled_segments() + df_s.get_enabled_segments()
+
 RR = 40.0
 df_x = pd.DataFrame(columns=['con_x', 'con_y', 'x'], index=[0, 1, 2])
 df_y = pd.DataFrame(columns=['con_x', 'con_y', 'y'], index=[0, 1, 2])
@@ -58,16 +59,19 @@ arbstep = 0.05
 
 # Convergence parameters
 convergence_threshold = 0.10  # 10% difference threshold
-large_difference_threshold = 1.00  # 100% difference threshold
-large_step_multiplier = 3.0  # Make steps 3x larger when far from center
+#large_difference_threshold = 1.00  # 100% difference threshold
+large_difference_threshold = 1.50  # 150% difference threshold
 
+
+#large_step_multiplier = 3.0  # Make steps 3x larger when far from center
+large_step_multiplier = 2.0  # Make steps 2x larger when far from center
 # Track best position throughout entire run
 best_difference = float('inf')
 best_con_x = 0
 best_con_y = 0
 best_iteration = -1
 
-for iteration in range(0, 18):
+for iteration in range(0, 50):
 
     # Acquire one image per segment, a total of 12 images in this case
     images = microscope.acquisition.acquire_stem_segment_images(segments, 256, 3E-6)
@@ -105,10 +109,15 @@ for iteration in range(0, 18):
     con_y=con_y*factor_sensitivity
     
     # Get channel values directly without bias subtraction
-    ch1 = image_mean_dict.get('DF-S-Outer1')
-    ch2 = image_mean_dict.get('DF-S-Outer2')
-    ch3 = image_mean_dict.get('DF-S-Outer3')
-    ch4 = image_mean_dict.get('DF-S-Outer4')
+    ch1 = image_mean_dict.get('DF-S-Inner1')
+    ch2 = image_mean_dict.get('DF-S-Inner2')
+    ch3 = image_mean_dict.get('DF-S-Inner3')
+    ch4 = image_mean_dict.get('DF-S-Inner4')
+
+    #ch1 = image_mean_dict.get('DF-S-Outer1')
+    #ch2 = image_mean_dict.get('DF-S-Outer2')
+    #ch3 = image_mean_dict.get('DF-S-Outer3')
+    #ch4 = image_mean_dict.get('DF-S-Outer4')
 
     print(round(ch1,3), round(ch2,3), round(ch3,3), round(ch4,3))
 

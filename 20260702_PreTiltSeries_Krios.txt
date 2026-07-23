@@ -1,17 +1,17 @@
 #!Python
 #=============================
-#ScriptName PreTiltSeries
+#ScriptName PreTiltSeries_Krios
 #Author: Peter Kirchweger
 #=============================
 #
 import serialem as sem
 from autoscript_tem_microscope_client import TemMicroscopeClient
 from autoscript_tem_microscope_client.enumerations import *
-#from autoscript_tem_microscope_client.structures import *
+from autoscript_tem_microscope_client.structures import *
 
 ############################################
 #Set the wanted defocus here
-defoc = -0.5
+defoc = 1
 ############################################
 # Connect to AutoScript server
 sem.Echo("I'm connecting to the AutoScriptTEM Server")
@@ -28,25 +28,55 @@ scanning_detectors = microscope.detectors.scanning_detectors
 print("Scanning detectors: ", scanning_detectors)
 
 bf_s = microscope.detectors.get_scanning_detector(DetectorType.BF_S)
-bf_s.set_enabled_segments(DetectorSegmentType.INNER_RING)
 df_s = microscope.detectors.get_scanning_detector(DetectorType.DF_S)
+haadf = microscope.detectors.get_scanning_detector(DetectorType.HAADF)
+
+# Enable the inner segments on the BF-S detector
+bf_s.set_enabled_segments(DetectorSegmentType.INNER_RING)
+
+# Enable all segments on the DF-S detector
 df_s.set_enabled_segments(DetectorSegmentType.ALL)
+
+# Enable SINGLE segment on HAADF
+haadf.set_enabled_segments(DetectorSegmentType.SINGLE)
+
+bf_s .insert()
+df_s .insert()
+haadf .insert()
+print(f"BF is {bf_s .insertion_state}")
+print(f"DF is {df_s .insertion_state}")
+print(f"HAADF is {haadf .insertion_state}")
+
+# Join the two lists together
+segments = haadf.get_enabled_segments() + bf_s.get_enabled_segments() + df_s.get_enabled_segments()
+print("This is the number of segments: ", len(segments))
 print("#################################################")
-print(f"Camera length is: {microscope.optics.camera_length.value.label}")
+print(f"The microscope runs at {microscope.optics.acceleration_voltage.value} eV.")
+print(f"The Convergence angle is: {microscope.optics.convergence_angle} (rad)")
+print(f"The Camera length is: {microscope.optics.camera_length.value.label}")
 print(f"This is the detection angle {bf_s.collection_angle_limits} (rad) of the inner ring")
 print(f"This is the detection angle {df_s.collection_angle_limits} (rad) of the two outer rings (DF-I + DF-O)")
+print(f"This is the detection angle {haadf.collection_angle_limits} (rad) of the HAADF")
 print(f"This is the gain {df_s.gain} and offset {df_s.offset}")
+print(f"This is the defocus: {sem.ReportDefocus()}")
 print("#################################################")
+
+
+#Retract the HAADF for aligning the beam on the DFi
+haadf .retract()
+print(f"HAADF is {haadf .insertion_state}")
+
 #sem.ReportDefocus()
 sem.SetDefocus(defoc)
 print(f"This is the Defocus: {sem.ReportDefocus()}")
 #Now go to the LowDose Area Focus and set to a very high magnification
 sem.GoToLowDoseArea('F')
 sem.ReportLowDose()
-sem.SetMag(650000) 
+#sem.SetMag(84000000.0)
 sem.ReportMag()
-print("Switching to high mag")
-#include CenterDisk
+print("#################################################")
+print("Switching to high mag and I execute the CenterDisk script")
+#include CenterDisk_Krios
 
 #Now make sure to go back to LowDose
 sem.SetLowDoseMode(1)
@@ -54,3 +84,6 @@ sem.GoToLowDoseArea('R')
 sem.ReportMag()
 sem.ReportDiffractionShift()
 
+# Insert the detector (if already inserted, do nothing) 
+haadf .insert()
+print(f"HAADF is {haadf .insertion_state}")
