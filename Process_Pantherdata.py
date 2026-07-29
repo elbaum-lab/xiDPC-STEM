@@ -57,6 +57,17 @@ def load_config(config_file):
 
 def parse_arguments():
     """Parse command-line arguments with config file support."""
+    defaults = {
+        "search_pattern": "BF-S_Inner1",
+        "tilt_step": 2.0,
+        "semi_angle": 1.2,
+        "wavelength": 0.0025,
+        "bf_disk_location": "DF_Outer",
+        "matlab_folder": "/home/labs/elbaum/Collaboration",
+        "matlab_function": "panther_iDPC_function_PK4",
+        "overwrite": True,
+    }
+
     parser = argparse.ArgumentParser(
         description="Process Panther data for piDPC analysis",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -75,51 +86,51 @@ def parse_arguments():
     parser.add_argument(
         "--search-pattern", "-p",
         type=str,
-        default="BF-S_Inner1",
+        default=defaults["search_pattern"],
         help="Search pattern for files",
     )
     parser.add_argument(
         "--tilt-step", "-t",
         type=float,
-        default=2.0,
+        default=defaults["tilt_step"],
         help="Tilt step in degrees",
     )
     parser.add_argument(
         "--semi-angle", "-s",
         type=float,
-        default=1.2,
+        default=defaults["semi_angle"],
         help="Semiconvergence angle in mrad",
     )
     parser.add_argument(
         "--wavelength", "-w",
         type=float,
-        default=0.0025,
+        default=defaults["wavelength"],
         help="Wavelength in nm",
     )
     parser.add_argument(
         "--bf-disk-location", "-b",
         type=str,
-        default="DF_Outer",
+        default=defaults["bf_disk_location"],
         choices=["BF_Inner", "DF_Inner", "DF_Outer"],
         help="Location of the BF disk",
     )
     parser.add_argument(
         "--matlab-folder", "-m",
         type=str,
-        default="/matlab/home/folder",
+        default=defaults["matlab_folder"],
         help="Path to the MATLAB folder",
     )
     parser.add_argument(
         "--matlab-function", "-f",
         type=str,
-        default="panther_iDPC_function_PK4",
+        default=defaults["matlab_function"],
         help="Name of the MATLAB function to execute",
     )
     
     parser.add_argument(
         "--overwrite",
         action=argparse.BooleanOptionalAction,
-        default=True,
+        default=defaults["overwrite"],
         help="Overwrite existing results (if disabled, skips folders with existing output)",
     )
 
@@ -132,19 +143,19 @@ def parse_arguments():
         # Override with config file values if not provided on command line
         if args.parent_directory is None and 'parent_directory' in config:
             args.parent_directory = config['parent_directory']
-        if args.search_pattern == 'BF-S_Inner1' and 'search_pattern' in config:
+        if args.search_pattern == defaults["search_pattern"] and 'search_pattern' in config:
             args.search_pattern = config['search_pattern']
-        if args.tilt_step == 2.0 and 'tilt_step' in config:
+        if args.tilt_step == defaults["tilt_step"] and 'tilt_step' in config:
             args.tilt_step = float(config['tilt_step'])
-        if args.semi_angle == 1.2 and 'semi_angle' in config:
+        if args.semi_angle == defaults["semi_angle"] and 'semi_angle' in config:
             args.semi_angle = float(config['semi_angle'])
-        if args.wavelength == 0.0025 and 'wavelength' in config:
+        if args.wavelength == defaults["wavelength"] and 'wavelength' in config:
             args.wavelength = float(config['wavelength'])
-        if args.bf_disk_location == 'DF_Outer' and 'bf_disk_location' in config:
+        if args.bf_disk_location == defaults["bf_disk_location"] and 'bf_disk_location' in config:
             args.bf_disk_location = config['bf_disk_location']
-        if args.matlab_folder is None and 'matlab_folder' in config:
+        if args.matlab_folder == defaults["matlab_folder"] and 'matlab_folder' in config:
             args.matlab_folder = config['matlab_folder']
-        if args.matlab_function == 'panther_piDPC' and 'matlab_function' in config:
+        if args.matlab_function == defaults["matlab_function"] and 'matlab_function' in config:
             args.matlab_function = config['matlab_function']
         if 'overwrite' in config:
             args.overwrite = config.getboolean('overwrite')
