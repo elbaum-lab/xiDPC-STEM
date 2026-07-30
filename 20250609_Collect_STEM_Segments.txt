@@ -57,7 +57,7 @@ sem.ReportBinning("3")
 sem.Echo("I'm connecting to the AutoScriptTEM Server")
 microscope = TemMicroscopeClient()
 microscope.connect("COMPUTERNAME", 7521)
-%microscope.connect("IP-ADDRESS", 7521)
+#microscope.connect("IP-ADDRESS", 7521)
 
 # Change optical mode to STEM
 #microscope.optics.optical_mode = OpticalMode.STEM

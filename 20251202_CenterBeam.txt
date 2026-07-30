@@ -36,7 +36,7 @@ def solve_theta(C: float):
 
 microscope = TemMicroscopeClient()
 microscope.connect("COMPUTERNAME", 7521)
-%microscope.connect("IP-ADDRESS", 7521)
+#microscope.connect("IP-ADDRESS", 7521)
 
 time.sleep(1)
 

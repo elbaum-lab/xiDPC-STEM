@@ -17,7 +17,7 @@ defoc = 1
 sem.Echo("I'm connecting to the AutoScriptTEM Server")
 microscope = TemMicroscopeClient()
 microscope.connect("COMPUTERNAME", 7521)
-%microscope.connect("IP-ADDRESS", 7521)
+#microscope.connect("IP-ADDRESS", 7521)
 
 # Read out microscope type and software version
 system_info = microscope.service.system.name + ", version " + microscope.service.system.version
