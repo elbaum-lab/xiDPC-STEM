@@ -52,7 +52,7 @@ def load_config(config_file):
     if 'piDPC' not in config:
         raise ValueError(f"Config file {config_file} must contain a [piDPC] section")
     
-    return config['piDPC']
+    return config['xDPC']
 
 
 def parse_arguments():

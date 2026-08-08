@@ -26,6 +26,7 @@
 ## Data processing 
 ### Setup Matlab
 Requires MatTomo in search path (PEET project: https://bio3d.colorado.edu/imod/matlab.html).
+Requires 'Image Processing Toolbox' from the MatLab addons installed. 
 
 Place the 'panther\_xDPC.m' script into the Matlab startup folder.
 
